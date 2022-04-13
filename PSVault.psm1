@@ -2,14 +2,8 @@ param(
 	[string]$vaultFile = "$($Env:USERPROFILE)\.psvault"
 )
 
-
-$vaultFile = ".psvault"
-$schema = "schema.json"
-
-
 #import-module C:\Users\Anonymous\go\src\github.com\mcfly722\PSVault\psvault.psm1
 #Add-ToVault -name 'git push to myrepository.biz' -exeTool 'C:\Program Files\Git\bin\git.exe' -includeForParameters $('push',"pop") -parametersToEncrypt $('https://username:password@myrepository.biz/file.git')
-
 
 
 Add-Type -AssemblyName System.Security
@@ -115,15 +109,6 @@ function Add-ToVault{
 			$encryptionCertificate
 		}
 
-		if (-not (Test-Path $vaultFile)){
-			@{"Credentials"=@()} | convertTo-JSON -Depth 5 > $vaultFile
-		} else {
-			$content = get-content $vaultFile
- 			if ([string]::IsNullOrEmpty($content)){
-				@{"Credentials"=@()} | convertTo-JSON -Depth 5 > $vaultFile
-			 }
-		}
-
 		#$vault = get-content $vaultFile | convertFrom-JSON
 		$credentials = Get-VaultCredentials
 
@@ -193,8 +178,9 @@ function Remove-FromVault {
 
 Export-ModuleMember -Function Remove-FromVault -Cmdlet "Remove-FromVault" -Alias "Remove-FromVault"
 
-<#
-		
 
-#>
+$credentials = Get-VaultCredentials
+
+$grouped = $credentials | group-object {($_.exeTool | dir).baseName} -asHashTable -asString
+
 #get-process | out-gridview -Title "select authentication method" -OutputMode Single
