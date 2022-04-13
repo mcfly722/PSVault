@@ -124,7 +124,8 @@ function Add-ToVault{
 			 }
 		}
 
-		$vault = get-content $vaultFile | convertFrom-JSON
+		#$vault = get-content $vaultFile | convertFrom-JSON
+		$credentials = Get-VaultCredentials
 
 		$sensitiveData = $parametersToEncrypt | convertTo-JSON -compress
 
@@ -132,16 +133,27 @@ function Add-ToVault{
 			$excludeForParameters=@()
 		}
 
-		$vault.Credentials+=@{
+		$newRecord = @{
 			'name'=$name;
 			'exeTool'=$exeTool;
 			'includeForParameters'=@($includeForParameters);
 			'excludeForParameters'=@($excludeForParameters);
 			'encryptedParameters'= [system.convert]::ToBase64String($encryptionCertificate.PublicKey.Key.Encrypt([system.text.encoding]::UTF8.GetBytes($sensitiveData), $true));
-			'encryptionCertificateThumbprint'=$encryptionCertificate.Thumbprint
+			'thumbprint'=$encryptionCertificate.Thumbprint
 		}
 
-		$vault | convertTo-JSON -Depth 5 > $vaultFile
+		$newRecordCompressedString = $newRecord | convertTo-JSON -compress
+		
+		#$newRecord | convertTo-JSON | write-host
+		#write-host "signing with cert=$($encryptionCertificate.Thumbprint)"	
+
+		$signature = [Convert]::ToBase64String($encryptionCertificate.PrivateKey.SignData([System.Text.Encoding]::UTF8.GetBytes($newRecordCompressedString),'SHA512'))
+		
+		$newRecord["signature"] = $signature
+
+		$credentials = @($credentials) + $newRecord
+
+		Save-VaultCredentials $credentials
 		
 	}
 	PROCESS {}        
@@ -150,6 +162,36 @@ function Add-ToVault{
 
 Export-ModuleMember -Function Add-ToVault -Cmdlet "Add-ToVault" -Alias "Add-ToVault"
 
+function Get-VaultCredentials {
+	$vault = get-content $vaultFile | convertFrom-JSON
+	$vault.Credentials
+}
+
+Export-ModuleMember -Function Get-VaultCredentials -Cmdlet "Get-VaultCredentials" -Alias "Get-VaultCredentials"
+
+function Save-VaultCredentials {
+	param($credentials)
+
+	if ([string]::IsNullOrEmpty($credentials)){
+		$credentials = @()
+	}
+	@{"Credentials"=$credentials} | convertTo-JSON -Depth 5 > $vaultFile
+}
+
+function Remove-FromVault {
+	PROCESS {
+		$signature = $_.signature
+		
+		$credentials = Get-VaultCredentials
+
+		$updatedCredentials = $credentials | ? {-not($_.signature -like $signature)}
+		
+		Save-VaultCredentials $updatedCredentials
+	}
+
+}
+
+Export-ModuleMember -Function Remove-FromVault -Cmdlet "Remove-FromVault" -Alias "Remove-FromVault"
 
 <#
 		
