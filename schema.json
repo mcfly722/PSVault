@@ -1,0 +1,53 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "properties": {
+        "Credentials": {
+            "type": "array",
+            "items": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "exeTool": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "includeForParameters": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "excludeForParameters": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "encryptionCertificateThumbprint": {
+                        "type": "string",
+                        "minLength": 40
+                    },
+                    "encryptedParameters": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "required": [
+                    "name",
+                    "exeTool",
+                    "includeForParameters",
+                    "excludeForParameters",
+                    "encryptionCertificateThumbprint",
+                    "encryptedParameters"
+                ]
+            }
+        }
+    },
+    "required": [
+        "Credentials"
+    ]
+}
