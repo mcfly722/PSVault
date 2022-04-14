@@ -33,10 +33,13 @@ git push https://username:password@myrepository.biz/file.git
 ```
 
 * <b>description</b> - short description to understand this credentials is used for. This description is visible on credentials choose dialog when several options are acceptable.
-* <b>execTool</b> - original tool which have arguments, that should be protected
+* <b>execTool</b> - original tool which have arguments, that should be protected. If you don't specify this parameter, module will opens dialog and ask you to choose your tool.
 * <b>includeForParameters</b> - array of string parameters defines when sensitive data should be appended. (in this example it should be applied for <b>push</b> and <b>pop</b> git operations)
 * <b>excludeForParamenters</b> - array of string parameters defines when sensitive data should be skipped (skipping have more priority than including)
 * <b>paramentersToEncrypt</b> - array of string parameters which would be appended to the end of executed command (to extract and decrypt this sensitive parameters you should use private key)
+* <b>encryptionCertificate</b> - certificate with private key that should be used to encrypt and sign your sensitive data. If you do not specify this parameter, module will offer you to choose appropriate certificate from available list.
+
+
 
 #### 3. List all credentials from vault
 ```
