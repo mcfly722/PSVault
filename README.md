@@ -6,7 +6,7 @@ All credentials encrypted with certificate (hardware token could be used) and si
 
 #### 1. Import psm module
 ```
-import-module psvault.psm1
+import-module <full path>\psvault.psm1
 ```
 
 #### 2. Add your new credentials for your program
@@ -27,11 +27,10 @@ Add-ToVault `
 git push -mybiz
 ```
 It means that your <b>https://username:password@myrepository.biz/file.git</b> parameter would be added to final git call.<br><br>
-Finally would be replaced and executed:
+Finally would be replaced and executed command:
 ```
 git push https://username:password@myrepository.biz/file.git
 ```
-
 * <b>description</b> - short description to understand this credentials is used for. This description is visible on credentials choose dialog when several options are acceptable.
 * <b>execTool</b> - original tool which have arguments, that should be protected. If you don't specify this parameter, module will opens dialog and ask you to choose your tool.
 * <b>includeForParameters</b> - array of string parameters defines when sensitive data should be appended. (in this example it should be applied for <b>push</b> and <b>pop</b> git operations)
