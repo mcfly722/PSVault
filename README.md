@@ -15,27 +15,25 @@ Add-ToVault `
   -tag '-mybiz' `
   -description 'git push to myrepository.biz' `
   -exeTool 'C:\Program Files\Git\bin\git.exe' `
-  -includeForParameters $('push','pop') `
+  -includeForParameters $('push','pull') `
   -parametersToEncrypt $('https://username:password@myrepository.biz/file.git')
 ```
 
 
-* <b>tag</b> - this is argument for easy access to your credentials. Should be as short as possible because it used for command line.
-
-  like this:
+* <b>tag</b> - this is argument for easy access to your credentials. Should be as short as possible, cause you will specify it every time from command line<br>f.e. like this:
 ```
 git push -mybiz
 ```
 It means that your <b>https://username:password@myrepository.biz/file.git</b> parameter would be added to final git call.<br><br>
-Finally would be replaced and executed command:
+Finally your arguments would be replaced and original tool would be called with sensitive data:
 ```
 git push https://username:password@myrepository.biz/file.git
 ```
-* <b>description</b> - short description to understand this credentials is used for. This description is visible on credentials choose dialog when several options are acceptable.
-* <b>execTool</b> - original tool which have arguments, that should be protected. If you don't specify this parameter, module will opens dialog and ask you to choose your tool.
-* <b>includeForParameters</b> - array of string parameters defines when sensitive data should be appended. (in this example it should be applied for <b>push</b> and <b>pop</b> git operations)
-* <b>excludeForParamenters</b> - array of string parameters defines when sensitive data should be skipped (skipping have more priority than including)
-* <b>paramentersToEncrypt</b> - array of string parameters which would be appended to the end of executed command (to extract and decrypt this sensitive parameters you should use private key)
+* <b>description</b> - short description to understand what is this credentials is used for. This description is visible on credentials choose dialog when several options are acceptable.
+* <b>execTool</b> - original tool which have arguments, that should be protected. If you don't specify this parameter, module will opens dialog and ask you to choose your exe tool.
+* <b>includeForParameters</b> - array of string parameters defines when sensitive data should be appended. (in this example it should be applied for <b>push</b> and <b>pull</b> git operations)
+* <b>excludeForParamenters</b> - array of string parameters defines when sensitive data should be skipped (excluding have more priority than including)
+* <b>paramentersToEncrypt</b> - array of string parameters which would be appended to the end of executed command (to extract this sensitive parameters you should use private key)
 * <b>encryptionCertificate</b> - certificate with private key that should be used to encrypt and sign your sensitive data. If you do not specify this parameter, module will offer you to choose appropriate certificate from available list.
 
 
