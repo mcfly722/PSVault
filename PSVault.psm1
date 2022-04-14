@@ -3,7 +3,7 @@ param(
 )
 
 #import-module C:\Users\Anonymous\go\src\github.com\mcfly722\PSVault\psvault.psm1
-#Add-ToVault -name 'git push to myrepository.biz' -exeTool 'C:\Program Files\Git\bin\git.exe' -includeForParameters $('push',"pop") -parametersToEncrypt $('https://username:password@myrepository.biz/file.git')
+#Add-ToVault -tag '-mybiz' -description 'git push to myrepository.biz' -exeTool 'C:\Program Files\Git\bin\git.exe' -includeForParameters $('push',"pop") -parametersToEncrypt $('https://username:password@myrepository.biz/file.git')
 
 
 Add-Type -AssemblyName System.Security
@@ -14,19 +14,6 @@ function encryptWithCertificate {
 	$encryptedBytes = [system.convert]::ToBase64String($cert.PublicKey.Key.Encrypt([system.text.encoding]::UTF8.GetBytes($sensitiveData), $true))
 }
 
-
-function addToVault {
-	param(
-		[String]$name,
-		[String]$exeTool,
-		[String[]]$includeForParameters,
-		[String[]]$excludeForParameters,
-		[System.Security.Cryptography.X509Certificates.X509Certificate2]$encryptionCertificate
-	)
-	
-	
-}
-
 function Add-ToVault{
 	<#
 	.Synopsis
@@ -35,8 +22,11 @@ function Add-ToVault{
 	.Description
 	Cmdlet adds new sensitive credential parameters to current encrypted vault
 	
-	.Parameter name
-	Credentials name
+	.Parameter tag
+	Short tag name to access from command line to this credentials set
+
+	.Parameter description
+	Description of current credentials set
 	
 	.Parameter exeTool
 	Full path to exe tool, which have no safe method to store it passwords (ansible/git/kubectl/etc...)
@@ -61,7 +51,8 @@ function Add-ToVault{
 
 #>
 	param(
-		[Parameter(Mandatory=$true,ValueFromPipeline=$true)][String]$name,
+		[Parameter(Mandatory=$true,ValueFromPipeline=$true)][String]$tag,
+		[Parameter(Mandatory=$true,ValueFromPipeline=$true)][String]$description,
 		[Parameter(Mandatory=$true,ValueFromPipeline=$true)][AllowEmptyString()][String]$exeTool,
 		[Parameter(Mandatory=$true,ValueFromPipeline=$true)][AllowEmptyString()][String[]]$includeForParameters,
 		[Parameter(Mandatory=$false,ValueFromPipeline=$false)][AllowEmptyString()][String[]]$excludeForParameters,
@@ -93,7 +84,7 @@ function Add-ToVault{
 		if ([string]::IsNullOrEmpty($encryptionCertificate)){
 			$msg = "select certificate to encrypt your additional parameters"
 			$collection = new-object -type System.Security.Cryptography.X509Certificates.X509Certificate2Collection
-			Get-ChildItem -Path Cert:\CurrentUser\My | % {$collection.add($_) > $null}
+			Get-ChildItem -Path Cert:\CurrentUser\My | ? {(-not ($_.PrivateKey -eq $null)) -and ($_.NotAfter -gt (get-date))}| % {$collection.add($_) > $null}
 			$msg
 			
 			$selected = [System.Security.Cryptography.X509Certificates.X509Certificate2UI]::SelectFromCollection($collection,
@@ -119,7 +110,8 @@ function Add-ToVault{
 		}
 
 		$newRecord = @{
-			'name'=$name;
+			'tag'=$tag;
+			'description'=$description;
 			'exeTool'=$exeTool;
 			'includeForParameters'=@($includeForParameters);
 			'excludeForParameters'=@($excludeForParameters);
@@ -148,8 +140,10 @@ function Add-ToVault{
 Export-ModuleMember -Function Add-ToVault -Cmdlet "Add-ToVault" -Alias "Add-ToVault"
 
 function Get-VaultCredentials {
-	$vault = get-content $vaultFile | convertFrom-JSON
-	$vault.Credentials
+	if (test-path -path $vaultFile) {
+		$vault = get-content $vaultFile | convertFrom-JSON
+		$vault.Credentials
+	}
 }
 
 Export-ModuleMember -Function Get-VaultCredentials -Cmdlet "Get-VaultCredentials" -Alias "Get-VaultCredentials"
